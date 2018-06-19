@@ -1,0 +1,214 @@
+---
+title: 'blogdown Part I: launching a new site'
+author: 'Stephen Gragg'
+date: '2018-06-19'
+categories:
+  - Workflows
+tags:
+  - blogdown
+slug: workflow-starting-a-blogdown-site
+description: "A bare-bones workflow on configuring and deploying a blog using blogdown"
+---
+
+
+
+<div id="purpose" class="section level1">
+<h1>Purpose</h1>
+<ul>
+<li>A basic workflow to set up an R blog using <a href="https://github.com/rstudio/blogdown">blogdown</a>.
+<ul>
+<li>Create using the <a href="https://gohugo.io/">Hugo</a> theme <a href="https://github.com/kakawait/hugo-tranquilpeak-theme/blob/master/docs/user.md">Tranquilpeak</a> (v0.4.3).</li>
+<li>Host static website on <a href="https://www.netlify.com/">Netlify</a></li>
+<li>Source files stored on github</li>
+<li>Configured so that RSS feed can be shared with <a href="https://www.r-bloggers.com/">R-bloggers</a></li>
+</ul></li>
+</ul>
+</div>
+<div id="disclaimer" class="section level1">
+<h1>Disclaimer</h1>
+<p><em>Instructions here will rarely be explicit. These workflows are essentially notes for experienced users to help remind them of the minimal steps to complete the task at hand.</em></p>
+</div>
+<div id="prerequisites" class="section level1">
+<h1>Prerequisites</h1>
+<ul>
+<li>Strongish familiarity with RStudio, R packages, and R projects</li>
+<li>Medium familiarity with git and github</li>
+<li>Some familiarity with <code>blogdown</code>
+<ul>
+<li><a href="https://bookdown.org/yihui/blogdown/">blogdown: Creating Websites with R Markdown</a></li>
+</ul></li>
+<li>Installation of <code>R</code>, <code>R-Studio</code>, <code>blogdown</code>, and all associated dependencies</li>
+<li>A Netlify account linked to Github</li>
+</ul>
+</div>
+<div id="workflow" class="section level1">
+<h1>Workflow</h1>
+<div id="start-project" class="section level2">
+<h2>Start project</h2>
+<ul>
+<li>RStudio toolbar:
+<ul>
+<li><code>File -&gt; New Project -&gt; New Directory -&gt; blogdown website</code></li>
+<li>Copy <code>kakawait/hugo-tranquilpeak-theme</code> into the <code>Hugo theme</code> field</li>
+</ul></li>
+</ul>
+</div>
+<div id="version-control" class="section level2">
+<h2>Version control</h2>
+<ul>
+<li>RStudio toolbar:
+<ul>
+<li><code>Tools -&gt; Project Options -&gt; Version Control -&gt; select git</code></li>
+</ul></li>
+<li>Add the line <code>public</code> to <code>.gitignore</code></li>
+<li>Track all project files:</li>
+</ul>
+<pre><code>git add --all
+git commit -am &quot;First commit&quot;</code></pre>
+<ul>
+<li>Create a new repository on github</li>
+<li>Link local repo to remote repo:</li>
+</ul>
+<pre><code>git remote add origin git@github.com:username/blogname.git
+git push -u origin master</code></pre>
+</div>
+<div id="set-up-nelify" class="section level2">
+<h2>Set up Nelify</h2>
+<ul>
+<li>Add following line to <code>config.toml</code> file:
+<ul>
+<li><code>ignoreFiles = [&quot;\\.Rmd$&quot;, &quot;\\.Rmarkdown$&quot;, &quot;_files$&quot;, &quot;_cache$&quot;]</code></li>
+</ul></li>
+<li>Go to <a href="https://www.netlify.com/">Netlify</a> and select <code>New site from Git</code></li>
+<li>Set the following options:
+<ul>
+<li>Build command: <code>hugo</code></li>
+<li>Publish directory: <code>public</code></li>
+</ul></li>
+<li>Change build variables:
+<ul>
+<li>Find local hugo version <code>blogdown::hugo_version()</code></li>
+<li><code>Settings -&gt; Build and Deploy -&gt; Build Environmental Variables</code></li>
+<li><code>Set key -&gt; HUGO_VERSION and value -&gt; 0.42.1</code> (or the appropriate version)</li>
+</ul></li>
+<li>Change to desired site name:
+<ul>
+<li>On Netlify: <code>Settings -&gt; Site details -&gt; Site information -&gt; Site name</code></li>
+</ul></li>
+</ul>
+</div>
+<div id="edit-config.toml-file" class="section level2">
+<h2>Edit <code>config.toml</code> file</h2>
+<ul>
+<li>Update <code>baseURL</code> to netlify address</li>
+<li>Make other changes as desired</li>
+</ul>
+</div>
+<div id="fix-rss-feed-for-r-bloggers" class="section level2">
+<h2>Fix RSS feed for R-bloggers</h2>
+<p><strong>Note:</strong> By default, the RSS feed for Tranquilpeak is set up to display article summaries, which will not allow automatic uploading to <em>R-bloggers</em>. A solution (reproduced here) can be found on the blog: <a href="https://coolbutuseless.bitbucket.io/2018/02/07/blogdown-rss-feed-of-full-articles/">cool but useless</a></p>
+<ul>
+<li>Create the file <code>rss.xml</code> in the following directory:</li>
+<li><code>themes/hugo-tranquilpeak-theme/layouts</code></li>
+<li>Copy and paste the following text into this file (<a href="https://gohugo.io/templates/rss/#the-embedded-rss-xml">unmodified version</a>):</li>
+</ul>
+<pre><code>&lt;rss version=&quot;2.0&quot; xmlns:atom=&quot;http://www.w3.org/2005/Atom&quot;&gt;
+  &lt;channel&gt;
+    &lt;title&gt;{{ if eq  .Title  .Site.Title }}{{ .Site.Title }}{{ else }}{{ with .Title }}{{.}} on {{ end }}{{ .Site.Title }}{{ end }}&lt;/title&gt;
+    &lt;link&gt;{{ .Permalink }}&lt;/link&gt;
+    &lt;description&gt;Recent content {{ if ne  .Title  .Site.Title }}{{ with .Title }}in {{.}} {{ end }}{{ end }}on {{ .Site.Title }}&lt;/description&gt;
+    &lt;generator&gt;Hugo -- gohugo.io&lt;/generator&gt;{{ with .Site.LanguageCode }}
+    &lt;language&gt;{{.}}&lt;/language&gt;{{end}}{{ with .Site.Author.email }}
+    &lt;managingEditor&gt;{{.}}{{ with $.Site.Author.name }} ({{.}}){{end}}&lt;/managingEditor&gt;{{end}}{{ with .Site.Author.email }}
+    &lt;webMaster&gt;{{.}}{{ with $.Site.Author.name }} ({{.}}){{end}}&lt;/webMaster&gt;{{end}}{{ with .Site.Copyright }}
+    &lt;copyright&gt;{{.}}&lt;/copyright&gt;{{end}}{{ if not .Date.IsZero }}
+    &lt;lastBuildDate&gt;{{ .Date.Format &quot;Mon, 02 Jan 2006 15:04:05 -0700&quot; | safeHTML }}&lt;/lastBuildDate&gt;{{ end }}
+    {{ with .OutputFormats.Get &quot;RSS&quot; }}
+        {{ printf &quot;&lt;atom:link href=%q rel=\&quot;self\&quot; type=%q /&gt;&quot; .Permalink .MediaType | safeHTML }}
+    {{ end }}
+    {{ range .Data.Pages }}
+    &lt;item&gt;
+      &lt;title&gt;{{ .Title }}&lt;/title&gt;
+      &lt;link&gt;{{ .Permalink }}&lt;/link&gt;
+      &lt;pubDate&gt;{{ .Date.Format &quot;Mon, 02 Jan 2006 15:04:05 -0700&quot; | safeHTML }}&lt;/pubDate&gt;
+      {{ with .Site.Author.email }}&lt;author&gt;{{.}}{{ with $.Site.Author.name }} ({{.}}){{end}}&lt;/author&gt;{{end}}
+      &lt;guid&gt;{{ .Permalink }}&lt;/guid&gt;
+      &lt;description&gt;{{ .Content | html }}&lt;/description&gt;
+    &lt;/item&gt;
+    {{ end }}
+  &lt;/channel&gt;
+&lt;/rss&gt;</code></pre>
+<ul>
+<li>Potential alternative solution by <a href="http://thug-r.life/post/2018-02-07-hugo-to-rbloggers/">Thug R Life</a></li>
+</ul>
+</div>
+<div id="add-description-to-.rmd-posts" class="section level2">
+<h2>Add description to .Rmd posts</h2>
+<p><strong>Note:</strong> posts created using .Rmd documents will be formatted awkwardly on the homepage (by default, show the first 70 lines all combine into one paragraph). github user Joseph Chou (jhchou), posted a <a href="https://github.com/rstudio/blogdown/issues/21">solution</a> that works for Tranquilpeak v0.4.3-BETA.</p>
+<ul>
+<li>Navigate to <code>themes\hugo-tranquilpeak-theme\layouts\_default\summary.html</code></li>
+<li>Find line 43 - <code>{{ .Summary }}</code></li>
+<li>Replace with:</li>
+</ul>
+<pre><code>{{if .Description }}
+  {{ printf &quot;%s&quot; .Description }}
+{{ else }}
+  {{ printf &quot;%s&quot; .Summary | markdownify }}
+{{ end }}</code></pre>
+<ul>
+<li>This will allow you to add summaries via the .Rmd post YAML header that will display the first 70 lines</li>
+</ul>
+<pre><code>---
+title: &quot;Test post 2&quot;
+author: &#39;&#39;
+date: &#39;2018-06-19&#39;
+slug: test-post-2
+categories: []
+tags: []
+description: &quot;a description&quot;
+---</code></pre>
+</div>
+<div id="deploy-website" class="section level2">
+<h2>Deploy website</h2>
+<ul>
+<li>Netlify will build website in public upon push to github.</li>
+</ul>
+</div>
+<div id="other-themes" class="section level2">
+<h2>Other themes</h2>
+<p>This workflow was written with the Tranquilpeak theme in mind. However, other suitable themes may be found here: * <a href="http://themes.gohugo.io/">Hugo Themes</a> * <a href="https://bookdown.org/yihui/blogdown/other-themes.html">Yihui’s recommendations</a></p>
+<p>To implement another theme, when starting a new <code>blogdown</code> website identify the user name and rep of the desired theme, and use this as prompted when starting a new website using the <code>File</code> menu in RStudio.</p>
+</div>
+</div>
+<div id="additional-reading" class="section level1">
+<h1>Additional reading</h1>
+<ul>
+<li><a href="https://bookdown.org/yihui/blogdown/">blogdown: Creating Websites with R Markdown</a></li>
+<li><a href="https://github.com/kakawait/hugo-tranquilpeak-theme/blob/master/docs/user.md">Tranquilpeak documentation</a></li>
+</ul>
+</div>
+<div id="session-info" class="section level1">
+<h1>Session info</h1>
+<pre><code>## R version 3.5.0 (2018-04-23)
+## Platform: x86_64-w64-mingw32/x64 (64-bit)
+## Running under: Windows 10 x64 (build 10240)
+## 
+## Matrix products: default
+## 
+## locale:
+## [1] LC_COLLATE=English_United States.1252 
+## [2] LC_CTYPE=English_United States.1252   
+## [3] LC_MONETARY=English_United States.1252
+## [4] LC_NUMERIC=C                          
+## [5] LC_TIME=English_United States.1252    
+## 
+## attached base packages:
+## [1] stats     graphics  grDevices utils     datasets  methods   base     
+## 
+## loaded via a namespace (and not attached):
+##  [1] compiler_3.5.0  backports_1.1.2 bookdown_0.7    magrittr_1.5   
+##  [5] rprojroot_1.3-2 tools_3.5.0     htmltools_0.3.6 yaml_2.1.19    
+##  [9] Rcpp_0.12.17    stringi_1.1.7   rmarkdown_1.10  blogdown_0.6   
+## [13] knitr_1.20      stringr_1.3.1   digest_0.6.15   xfun_0.2       
+## [17] evaluate_0.10.1</code></pre>
+</div>
