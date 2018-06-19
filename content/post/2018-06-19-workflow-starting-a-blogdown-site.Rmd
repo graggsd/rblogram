@@ -189,8 +189,3 @@ starting a new website using the `File` menu in RStudio.
 ```{r, warning=FALSE, message=FALSE, echo=FALSE}
 sessionInfo()
 ```
-
-
-
-
-
