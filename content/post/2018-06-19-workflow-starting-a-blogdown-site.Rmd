@@ -167,7 +167,6 @@ description: "a description"
 
 * Netlify will build website in public upon push to github.
 
-
 ## Other themes
 
 This workflow was written with the Tranquilpeak theme in mind. However, other
