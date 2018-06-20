@@ -1,0 +1,212 @@
+---
+title: 'Package Dev Workflow: Starting a New Package'
+author: Stephen Gragg
+date: '2018-06-20'
+slug: package-dev-workflow-starting-a-new-package
+categories:
+  - workflows
+tags:
+  - packages
+description: "A bare-bones workflow on starting a new package"
+---
+
+
+
+<div id="purpose" class="section level1">
+<h1>Purpose</h1>
+<ul>
+<li>A basic workflow to set up an R package</li>
+</ul>
+</div>
+<div id="disclaimer" class="section level1">
+<h1>Disclaimer</h1>
+<p><em>Instructions here will rarely be explicit. These workflows are essentially notes for experienced users to help remind them of the minimal steps to complete the task at hand.</em></p>
+</div>
+<div id="prerequisites" class="section level1">
+<h1>Prerequisites</h1>
+<ul>
+<li>Strongish familiarity with RStudio, R packages, and R projects
+<ul>
+<li><a href="http://r-pkgs.had.co.nz/">R Packages</a> - contains almost all information to get up and running</li>
+</ul></li>
+<li>Medium familiarity with git and github</li>
+<li>Installation of <code>R</code>, <code>R-Studio</code>, <code>devtools</code>, <code>test_that</code>, and associated dependencies</li>
+<li>Link Travis and Appveyor accounts to github</li>
+</ul>
+</div>
+<div id="workflow" class="section level1">
+<h1>Workflow</h1>
+<ul>
+<li><code>File -&gt; New project -&gt; New directory -&gt; R package -&gt; check create git repository</code></li>
+<li><strong>Write functions</strong>:
+<ul>
+<li>Write functions within <code>.R</code> files in <code>/R</code> directory</li>
+<li>During dev, to interactively work with functions:
+<ul>
+<li>reinstalled and load package: <code>devtools::load_all()</code> or <code>ctrl-shift-L</code></li>
+</ul></li>
+<li>Add <code>#' @export</code> comment above all functions intended for user
+<ul>
+<li><code>ctrl-shift-D</code> or <code>devtools::document()</code> to add function to <code>NAMESPACE</code></li>
+</ul></li>
+<li><strong>External functions:</strong>
+<ul>
+<li>Add package to <code>Imports</code> field of <code>DESCRIPTION</code> using: <code>devtools::use_package(&quot;name_of_package&quot;)</code></li>
+<li>Reference in code as <code>package::function()</code></li>
+<li><p>Best practice - add min version number in <code>DESCRIPTION</code>:</p>
+<pre><code>Imports: 
+dplyr (&gt;= 0.7.5),</code></pre></li>
+<li><strong>Frequently used external functions</strong>
+<ul>
+<li>To remove requirement to ref with <code>package::</code></li>
+<li>Create <code>imports.R</code> file in <code>/R</code></li>
+<li><p>Populate with:</p>
+<pre><code>#&#39; importFrom package function
+NULL</code></pre></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li><strong>Document</strong> <a href="http://r-pkgs.had.co.nz/man.html">ref</a>
+<ul>
+<li><p>Add roxygen2 comments above each exported function:</p>
+<pre><code>    #&#39; Title (short and descriptive)
+    #&#39;
+    #&#39; Description (slightly longer)
+    #&#39;
+    #&#39; Details (longer description)
+    #&#39;
+    #&#39; @param a description of parameter a
+    #&#39; @param b description of parameter b
+    #&#39; @return output of function
+    #&#39; @export
+    #&#39; @examples
+    #&#39; # Short example of use
+    #&#39; sum(1, 2)</code></pre></li>
+<li>(Re-)build documentation: <code>ctrl-shift-D</code> or <code>devtools::document()</code></li>
+<li><p>Helpful tags:</p>
+<pre><code># Use parameters from other function:
+#&#39; @inheritParams source_function
+
+# Document in another function (useful for directing 
+# class-specific methods to documentation within generic)
+#&#39; @describeIn source_function
+
+# Link to other documentation
+## If in different package
+#&#39; @seealso \code{\link[package]{function}}
+## If in same package
+#&#39; @seealso \code{\link{function}}
+
+# Format as code
+#&#39; \code{x}
+
+# To add additional sections
+#&#39; @section SectionName:
+
+# Adding a link
+#&#39; \code{\link{Summary}}
+
+# If you have a family of related functions where every function ]
+# should link to every other function in the family
+#&#39; @family aggregate functions
+
+# Ordered list
+#&#39; \enumerate{
+#&#39;   \item First item
+#&#39;   \item Second item
+#&#39; }
+
+# Unordered list
+#&#39; \itemize{
+#&#39;   \item First item
+#&#39;   \item Second item
+#&#39; }
+
+# Include an example that is not executed when building package
+@examples
+\dontrun{
+sum(1, 2)
+}</code></pre></li>
+</ul></li>
+<li><strong>LICENSE</strong>: <code>devtools::use_gpl3_license</code> or <code>devtools::use_mit_license</code>
+<ul>
+<li><a href="https://choosealicense.com/">More info</a></li>
+</ul></li>
+<li><strong><code>DESCRIPTION</code>:</strong>
+<ul>
+<li>Edit as needed</li>
+</ul></li>
+<li><strong>README.Rmd</strong> <a href="http://r-pkgs.had.co.nz/release.html#readme">ref</a>
+<ul>
+<li><code>devtools::use_readme_rmd</code></li>
+<li>Must update <code>.md</code> file after each <code>.Rmd</code> file edit: <code>ctrl+shift+k</code></li>
+</ul></li>
+<li><strong>Vignettes</strong> <a href="http://r-pkgs.had.co.nz/vignettes.html">ref</a>
+<ul>
+<li><code>devtools::use_vignette(&quot;vignette-title&quot;)</code></li>
+<li>Modify vignette as necessary</li>
+<li>After each modification: <code>devtools::build_vignettes()</code> or <code>ctrl+shift+k</code></li>
+</ul></li>
+<li><strong>Github</strong>
+<ul>
+<li>Create new repository on github with same name as package</li>
+<li>Copy commands for pushing an existing repo and enter into RStudio terminal</li>
+</ul></li>
+</ul>
+<div class="figure">
+<img src="https://lh3.googleusercontent.com/HhoU3rTzoimQtf9Rwrv3Z8Gso1XtCv2-dZe025-GwRLNx7Mqv8TuuSTBHbzGjFnW1W7rIpDyW-cPdJzHbiopgSPRIaZ7RFkfeXVDwiG6ykK3PZ-AMjhe8dI2Zy8Xfd8QHwmJSt5nfBIwBOD4v-EDa0wQplCi1V_PWD_PCj6yohI-8z0CyPfug82DZVYYVvoXgyBIWfNEiSren_ECeqKpqP94M0EUfI40KFlfJEIM1W75a_al7vou9Es6weZVEgtIooxh7-xVes0FoE9DFO9EvvVdTJjFcweTv8Gv4WIrtRuLtiAD_rxhYHJKeXRCLnATdOnHm_pYsnRDZ2x0QcEh8Uh_skye0fshk9Q8SmG5FBbTHbH6XgeOMqcEbFKvjPQzKf2ZS-ro2vpYprOzCxNJLnIwTPtRx2YGqI4uqycnaGTGufvlgDD3YygDRkmtybsxPqJasPfEJbPCWkRrryy8a_9PVnWpRsZtg5d8zCg8ic3OnVTyqnaSoemsGMnd1rzSzuFm_dDl_jgjexprFWK2U3sV18qryhVK2giluGDC4L0N1QGYYL_8lA0Cz6Alai9HHDAgcBACfVndrVUTImRvLUMLEHVnGeBPIRC4MQ=w909-h326-no" alt="Push commands" />
+<p class="caption">Push commands</p>
+</div>
+<ul>
+<li><strong>Testing:</strong> <a href="http://r-pkgs.had.co.nz/tests.html">ref</a>
+<ul>
+<li><code>devtools::use_testthat()</code></li>
+<li>Create a .R file for each test in <code>projDir/tests/testthat/</code></li>
+<li><p>Populate with unit testing</p>
+<pre><code># Describe context at top
+# Example rom tidyr
+# https://github.com/tidyverse/tidyr/tree/master/tests
+context(&quot;complete&quot;)
+
+test_that(&quot;basic invocation works&quot;, {
+  df &lt;- tibble(x = 1:2, y = 1:2, z = 3:4)
+  out &lt;- complete(df, x, y)
+  expect_equal(nrow(out), 4)
+  expect_equal(out$z, c(3, NA, NA, 4))
+})</code></pre></li>
+<li>Run tests: <code>devtools::test()</code> or <code>ctrl + shift + T</code></li>
+</ul></li>
+<li><strong>Continuous integration</strong> <a href="http://r-pkgs.had.co.nz/check.html">ref</a>
+<ul>
+<li>Travis:
+<ul>
+<li><code>devtools::use_travis()</code></li>
+<li>Flip project repo switch on Travis</li>
+<li><p>Add badge to <code>README</code> file</p>
+<pre><code>[![Build Status](https://travis-ci.org/tidyverse/dplyr.svg?branch=master)](https://travis-ci.org/tidyverse/dplyr)</code></pre></li>
+</ul></li>
+<li>AppVeyor:
+<ul>
+<li><code>devtools::use_appveyor()</code></li>
+<li>Flip project repo switch on AppVeyor</li>
+<li><p>Add badge to <code>README</code> file</p>
+<pre><code>[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/tidyverse/dplyr?branch=master&amp;svg=true)](https://ci.appveyor.com/project/tidyverse/dplyr)</code></pre></li>
+</ul></li>
+</ul></li>
+<li><strong>Checks and cleanup</strong>
+<ul>
+<li><code>running devtools::check()</code></li>
+<li>Consider <code>lintr</code> or <code>formatR</code> to tidy code
+<ul>
+<li><code>lintr::lint_package()</code> adds markers to code and allow for manual cleanup</li>
+</ul></li>
+</ul></li>
+</ul>
+</div>
+<div id="helpful-resources" class="section level1">
+<h1>Helpful resources</h1>
+<ul>
+<li><a href="http://r-pkgs.had.co.nz/">R Packages</a></li>
+<li><a href="https://www.coursera.org/learn/r-packages">Building R Packages - Coursera</a></li>
+</ul>
+</div>

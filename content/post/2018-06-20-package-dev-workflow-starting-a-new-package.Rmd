@@ -1,0 +1,178 @@
+---
+title: 'Package Dev Workflow: Starting a New Package'
+author: Stephen Gragg
+date: '2018-06-20'
+slug: package-dev-workflow-starting-a-new-package
+categories:
+  - workflows
+tags:
+  - packages
+description: "A bare-bones workflow on starting a new package"
+---
+
+# Purpose
+
+* A basic workflow to set up an R package
+
+# Disclaimer
+
+*Instructions here will rarely be explicit. These workflows are essentially 
+notes for experienced users to help remind them of the minimal steps to 
+complete the task at hand.*
+
+# Prerequisites
+
+* Strongish familiarity with RStudio, R packages, and R projects
+    * [R Packages](http://r-pkgs.had.co.nz/) - contains almost all information to get up and running
+* Medium familiarity with git and github
+* Installation of `R`, `R-Studio`, `devtools`, `test_that`, and associated dependencies
+* Link Travis and Appveyor accounts to github
+
+# Workflow
+
+* `File -> New project -> New directory -> R package -> check create git repository`
+* **Write functions**:
+    * Write functions within `.R` files in `/R` directory
+    * During dev, to interactively work with functions:
+        * reinstalled and load package: `devtools::load_all()` or `ctrl-shift-L`
+    * Add `#' @export` comment above all functions intended for user
+        * `ctrl-shift-D` or `devtools::document()` to add function to `NAMESPACE`
+    * **External functions:**
+        * Add package to `Imports` field of `DESCRIPTION` using: `devtools::use_package("name_of_package")`
+        * Reference in code as `package::function()`
+        * Best practice - add min version number in `DESCRIPTION`:
+            ```
+            Imports: 
+            dplyr (>= 0.7.5),
+            ```
+        * **Frequently used external functions**
+            * To remove requirement to ref with `package::`
+            * Create `imports.R` file in `/R`
+            * Populate with:
+                ```
+                #' importFrom package function
+                NULL
+                ```
+* **Document** [ref](http://r-pkgs.had.co.nz/man.html)
+    * Add roxygen2 comments above each exported function:
+        ```
+            #' Title (short and descriptive)
+            #'
+            #' Description (slightly longer)
+            #'
+            #' Details (longer description)
+            #'
+            #' @param a description of parameter a
+            #' @param b description of parameter b
+            #' @return output of function
+            #' @export
+            #' @examples
+            #' # Short example of use
+            #' sum(1, 2)
+        ```
+    * (Re-)build documentation: `ctrl-shift-D` or `devtools::document()`
+    * Helpful tags:
+        ```
+        # Use parameters from other function:
+        #' @inheritParams source_function
+        
+        # Document in another function (useful for directing 
+        # class-specific methods to documentation within generic)
+        #' @describeIn source_function
+        
+        # Link to other documentation
+        ## If in different package
+        #' @seealso \code{\link[package]{function}}
+        ## If in same package
+        #' @seealso \code{\link{function}}
+        
+        # Format as code
+        #' \code{x}
+        
+        # To add additional sections
+        #' @section SectionName:
+        
+        # Adding a link
+        #' \code{\link{Summary}}
+        
+        # If you have a family of related functions where every function ]
+        # should link to every other function in the family
+        #' @family aggregate functions
+        
+        # Ordered list
+        #' \enumerate{
+        #'   \item First item
+        #'   \item Second item
+        #' }
+        
+        # Unordered list
+        #' \itemize{
+        #'   \item First item
+        #'   \item Second item
+        #' }
+        
+        # Include an example that is not executed when building package
+        @examples
+        \dontrun{
+        sum(1, 2)
+        }
+        ```
+* **LICENSE**: `devtools::use_gpl3_license` or `devtools::use_mit_license`
+    * [More info](https://choosealicense.com/)
+* **`DESCRIPTION`:**
+    * Edit as needed
+* **README.Rmd** [ref](http://r-pkgs.had.co.nz/release.html#readme)
+    * `devtools::use_readme_rmd`
+    * Must update `.md` file after each `.Rmd` file edit: `ctrl+shift+k`
+* **Vignettes** [ref](http://r-pkgs.had.co.nz/vignettes.html)
+    * `devtools::use_vignette("vignette-title")`
+    * Modify vignette as necessary
+    * After each modification: `devtools::build_vignettes()` or `ctrl+shift+k`
+* **Github**
+    * Create new repository on github with same name as package
+    * Copy commands for pushing an existing repo and enter into RStudio terminal
+
+![Push commands](https://lh3.googleusercontent.com/HhoU3rTzoimQtf9Rwrv3Z8Gso1XtCv2-dZe025-GwRLNx7Mqv8TuuSTBHbzGjFnW1W7rIpDyW-cPdJzHbiopgSPRIaZ7RFkfeXVDwiG6ykK3PZ-AMjhe8dI2Zy8Xfd8QHwmJSt5nfBIwBOD4v-EDa0wQplCi1V_PWD_PCj6yohI-8z0CyPfug82DZVYYVvoXgyBIWfNEiSren_ECeqKpqP94M0EUfI40KFlfJEIM1W75a_al7vou9Es6weZVEgtIooxh7-xVes0FoE9DFO9EvvVdTJjFcweTv8Gv4WIrtRuLtiAD_rxhYHJKeXRCLnATdOnHm_pYsnRDZ2x0QcEh8Uh_skye0fshk9Q8SmG5FBbTHbH6XgeOMqcEbFKvjPQzKf2ZS-ro2vpYprOzCxNJLnIwTPtRx2YGqI4uqycnaGTGufvlgDD3YygDRkmtybsxPqJasPfEJbPCWkRrryy8a_9PVnWpRsZtg5d8zCg8ic3OnVTyqnaSoemsGMnd1rzSzuFm_dDl_jgjexprFWK2U3sV18qryhVK2giluGDC4L0N1QGYYL_8lA0Cz6Alai9HHDAgcBACfVndrVUTImRvLUMLEHVnGeBPIRC4MQ=w909-h326-no)
+
+* **Testing:** [ref](http://r-pkgs.had.co.nz/tests.html)
+    * `devtools::use_testthat()`
+    * Create a .R file for each test in `projDir/tests/testthat/`
+    * Populate with unit testing
+        ```
+        # Describe context at top
+        # Example rom tidyr
+        # https://github.com/tidyverse/tidyr/tree/master/tests
+        context("complete")
+        
+        test_that("basic invocation works", {
+          df <- tibble(x = 1:2, y = 1:2, z = 3:4)
+          out <- complete(df, x, y)
+          expect_equal(nrow(out), 4)
+          expect_equal(out$z, c(3, NA, NA, 4))
+        })
+        ```
+    * Run tests: `devtools::test()` or `ctrl + shift + T`
+* **Continuous integration** [ref](http://r-pkgs.had.co.nz/check.html)
+    * Travis:
+        * `devtools::use_travis()`
+        * Flip project repo switch on Travis
+        * Add badge to `README` file
+            ```
+            [![Build Status](https://travis-ci.org/tidyverse/dplyr.svg?branch=master)](https://travis-ci.org/tidyverse/dplyr)
+            ```
+    * AppVeyor:
+        * `devtools::use_appveyor()`
+        * Flip project repo switch on AppVeyor
+        * Add badge to `README` file
+            ```
+            [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/tidyverse/dplyr?branch=master&svg=true)](https://ci.appveyor.com/project/tidyverse/dplyr)
+            ```
+* **Checks and cleanup**
+    * `running devtools::check()`
+    * Consider `lintr` or `formatR` to tidy code
+        * `lintr::lint_package()` adds markers to code and allow for manual cleanup
+        
+# Helpful resources
+
+* [R Packages](http://r-pkgs.had.co.nz/)
+* [Building R Packages - Coursera](https://www.coursera.org/learn/r-packages)

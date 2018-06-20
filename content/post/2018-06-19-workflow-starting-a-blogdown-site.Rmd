@@ -1,9 +1,9 @@
 ---
-title: 'blogdown Part I: launching a new site'
+title: 'blogdown Part I: Launching a New Site'
 author: 'Stephen Gragg'
 date: '2018-06-19'
 categories:
-  - Workflows
+  - workflows
 tags:
   - blogdown
 slug: workflow-starting-a-blogdown-site
@@ -37,154 +37,122 @@ complete the task at hand.*
 
 # Workflow
 
-## Start project
+* **Start project**
+    * RStudio toolbar:
+        * `File -> New Project -> New Directory -> blogdown website`
+        * Copy `kakawait/hugo-tranquilpeak-theme` into the `Hugo theme` field
+* **Version control**
+    * RStudio toolbar:
+        * `Tools -> Project Options -> Version Control -> select git`
+    * Add the line `public` to `.gitignore`
+    * Track all project files:
+        ```
+        git add --all
+        git commit -am "First commit"
+        ```
+    * Create a new repository on github
+    * Link local repo to remote repo:
+        ```
+        git remote add origin git@github.com:username/blogname.git
+        git push -u origin master
+        ```
 
-* RStudio toolbar:
-    * `File -> New Project -> New Directory -> blogdown website`
-    * Copy `kakawait/hugo-tranquilpeak-theme` into the `Hugo theme` field
+* **Nelify**
+    * Add following line to `config.toml` file:
+        * `ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]`
+    * Go to [Netlify](https://www.netlify.com/) and select `New site from Git`
+    * Set the following options:
+        * Build command: `hugo`
+        * Publish directory: `public`
+    * Change build variables:
+        * Find local hugo version `blogdown::hugo_version()`
+        * `Settings -> Build and Deploy -> Build Environmental Variables`
+        * `Set key -> HUGO_VERSION and value -> 0.42.1` (or the appropriate version)
+    * Change to desired site name:
+        * On Netlify: `Settings -> Site details -> Site information -> Site name`
     
-## Version control
+* `config.toml`
+    * Update `baseURL` to netlify address
+    * Make other changes as desired
 
-* RStudio toolbar:
-    * `Tools -> Project Options -> Version Control -> select git`
-* Add the line `public` to `.gitignore`
-* Track all project files:
+* **RSS feed**
+    * **Note:** By default, the RSS feed for Tranquilpeak is set up to display article summaries, which will not allow automatic uploading to *R-bloggers*.  A solution (reproduced here) can be found on the blog: [cool but useless](https://coolbutuseless.bitbucket.io/2018/02/07/blogdown-rss-feed-of-full-articles/)
+    * Create the file `rss.xml` in the following directory:
+      * `themes/hugo-tranquilpeak-theme/layouts`
+    * Copy and paste the following text into this file  ([unmodified version here](https://gohugo.io/templates/rss/#the-embedded-rss-xml)):
+        ```
+        <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+          <channel>
+            <title>{{ if eq  .Title  .Site.Title }}{{ .Site.Title }}{{ else }}{{ with .Title }}{{.}} on {{ end }}{{ .Site.Title }}{{ end }}</title>
+            <link>{{ .Permalink }}</link>
+            <description>Recent content {{ if ne  .Title  .Site.Title }}{{ with .Title }}in {{.}} {{ end }}{{ end }}on {{ .Site.Title }}</description>
+            <generator>Hugo -- gohugo.io</generator>{{ with .Site.LanguageCode }}
+            <language>{{.}}</language>{{end}}{{ with .Site.Author.email }}
+            <managingEditor>{{.}}{{ with $.Site.Author.name }} ({{.}}){{end}}</managingEditor>{{end}}{{ with .Site.Author.email }}
+            <webMaster>{{.}}{{ with $.Site.Author.name }} ({{.}}){{end}}</webMaster>{{end}}{{ with .Site.Copyright }}
+            <copyright>{{.}}</copyright>{{end}}{{ if not .Date.IsZero }}
+            <lastBuildDate>{{ .Date.Format "Mon, 02 Jan 2006 15:04:05 -0700" | safeHTML }}</lastBuildDate>{{ end }}
+            {{ with .OutputFormats.Get "RSS" }}
+                {{ printf "<atom:link href=%q rel=\"self\" type=%q />" .Permalink .MediaType | safeHTML }}
+            {{ end }}
+            {{ range .Data.Pages }}
+            <item>
+              <title>{{ .Title }}</title>
+              <link>{{ .Permalink }}</link>
+              <pubDate>{{ .Date.Format "Mon, 02 Jan 2006 15:04:05 -0700" | safeHTML }}</pubDate>
+              {{ with .Site.Author.email }}<author>{{.}}{{ with $.Site.Author.name }} ({{.}}){{end}}</author>{{end}}
+              <guid>{{ .Permalink }}</guid>
+              <description>{{ .Content | html }}</description>
+            </item>
+            {{ end }}
+          </channel>
+        </rss>
+        ```
+    * Potential alternative solution by [Thug R Life](http://thug-r.life/post/2018-02-07-hugo-to-rbloggers/)
 
-```
-git add --all
-git commit -am "First commit"
-```
+* **Add description to .Rmd posts**
 
-* Create a new repository on github
-* Link local repo to remote repo:
+    * **Note:** posts created using .Rmd documents will be formatted awkwardly on the homepage (by default, show the first 70 lines all combine into one paragraph). github user Joseph Chou (jhchou), posted a [solution](https://github.com/rstudio/blogdown/issues/21) that works for  Tranquilpeak v0.4.3-BETA.
+    * Navigate to `themes\hugo-tranquilpeak-theme\layouts\_default\summary.html`
+    * Find line 43 - `{{ .Summary }}`
+    * Replace with:
+        ```
+        {{if .Description }}
+          {{ printf "%s" .Description }}
+        {{ else }}
+          {{ printf "%s" .Summary | markdownify }}
+        {{ end }}
+        ```
 
-```
-git remote add origin git@github.com:username/blogname.git
-git push -u origin master
-```
+    * This will allow you to add summaries via the .Rmd post  YAML header that will display the first 70 lines
+        ```
+        ---
+        title: "Test post 2"
+        author: ''
+        date: '2018-06-19'
+        slug: test-post-2
+        categories: []
+        tags: []
+        description: "a description"
+        ---
+        ```
 
-## Set up Nelify
+* **Deploy website**
+    * Netlify will build website in public upon push to github.
 
-* Add following line to `config.toml` file:
-    * `ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]`
-* Go to [Netlify](https://www.netlify.com/) and select `New site from Git`
-* Set the following options:
-    * Build command: `hugo`
-    * Publish directory: `public`
-* Change build variables:
-    * Find local hugo version `blogdown::hugo_version()`
-    * `Settings -> Build and Deploy -> Build Environmental Variables`
-    * `Set key -> HUGO_VERSION and value -> 0.42.1` (or the appropriate version)
-* Change to desired site name:
-    * On Netlify: `Settings -> Site details -> Site information -> Site name`
-    
-## Edit `config.toml` file
+# Other themes
 
-* Update `baseURL` to netlify address
-* Make other changes as desired
+This workflow was written with the Tranquilpeak theme in mind. However, other suitable themes may be found here:
 
-## Fix RSS feed for R-bloggers
-
-**Note:** By default, the RSS feed for Tranquilpeak is set up to display
-article summaries, which will not allow automatic uploading to *R-bloggers*. 
-A solution (reproduced here) can be found on the blog:
-[cool but useless](https://coolbutuseless.bitbucket.io/2018/02/07/blogdown-rss-feed-of-full-articles/)
-
-* Create the file `rss.xml` in the following directory:
-  * `themes/hugo-tranquilpeak-theme/layouts`
-* Copy and paste the following text into this file 
-([unmodified version](https://gohugo.io/templates/rss/#the-embedded-rss-xml)):
-
-```
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>{{ if eq  .Title  .Site.Title }}{{ .Site.Title }}{{ else }}{{ with .Title }}{{.}} on {{ end }}{{ .Site.Title }}{{ end }}</title>
-    <link>{{ .Permalink }}</link>
-    <description>Recent content {{ if ne  .Title  .Site.Title }}{{ with .Title }}in {{.}} {{ end }}{{ end }}on {{ .Site.Title }}</description>
-    <generator>Hugo -- gohugo.io</generator>{{ with .Site.LanguageCode }}
-    <language>{{.}}</language>{{end}}{{ with .Site.Author.email }}
-    <managingEditor>{{.}}{{ with $.Site.Author.name }} ({{.}}){{end}}</managingEditor>{{end}}{{ with .Site.Author.email }}
-    <webMaster>{{.}}{{ with $.Site.Author.name }} ({{.}}){{end}}</webMaster>{{end}}{{ with .Site.Copyright }}
-    <copyright>{{.}}</copyright>{{end}}{{ if not .Date.IsZero }}
-    <lastBuildDate>{{ .Date.Format "Mon, 02 Jan 2006 15:04:05 -0700" | safeHTML }}</lastBuildDate>{{ end }}
-    {{ with .OutputFormats.Get "RSS" }}
-        {{ printf "<atom:link href=%q rel=\"self\" type=%q />" .Permalink .MediaType | safeHTML }}
-    {{ end }}
-    {{ range .Data.Pages }}
-    <item>
-      <title>{{ .Title }}</title>
-      <link>{{ .Permalink }}</link>
-      <pubDate>{{ .Date.Format "Mon, 02 Jan 2006 15:04:05 -0700" | safeHTML }}</pubDate>
-      {{ with .Site.Author.email }}<author>{{.}}{{ with $.Site.Author.name }} ({{.}}){{end}}</author>{{end}}
-      <guid>{{ .Permalink }}</guid>
-      <description>{{ .Content | html }}</description>
-    </item>
-    {{ end }}
-  </channel>
-</rss>
-```
-
-* Potential alternative solution by
-[Thug R Life](http://thug-r.life/post/2018-02-07-hugo-to-rbloggers/)
-
-## Add description to .Rmd posts
-
-**Note:** posts created using .Rmd documents will be formatted awkwardly on the
-homepage (by default, show the first 70 lines all combine into one paragraph).
-github user Joseph Chou (jhchou), posted a 
-[solution](https://github.com/rstudio/blogdown/issues/21) that works for 
-Tranquilpeak v0.4.3-BETA.
-
-
-* Navigate to `themes\hugo-tranquilpeak-theme\layouts\_default\summary.html`
-* Find line 43 - `{{ .Summary }}`
-* Replace with:
-
-```
-{{if .Description }}
-  {{ printf "%s" .Description }}
-{{ else }}
-  {{ printf "%s" .Summary | markdownify }}
-{{ end }}
-```
-
-* This will allow you to add summaries via the .Rmd post 
-YAML header that will display the first 70 lines
-
-```
----
-title: "Test post 2"
-author: ''
-date: '2018-06-19'
-slug: test-post-2
-categories: []
-tags: []
-description: "a description"
----
-```
-
-## Deploy website
-
-* Netlify will build website in public upon push to github.
-
-## Other themes
-
-This workflow was written with the Tranquilpeak theme in mind. However, other
-suitable themes may be found here:
 * [Hugo Themes](http://themes.gohugo.io/)
 * [Yihui's recommendations](https://bookdown.org/yihui/blogdown/other-themes.html)
 
-To implement another theme, when starting a new `blogdown` website identify 
+To implement another theme, when starting a new `blogdown` website, identify 
 the user name and rep of the desired theme, and use this as prompted when 
 starting a new website using the `File` menu in RStudio.
 
-# Additional reading
+# Additional resources
 
 * [blogdown: Creating Websites with R Markdown](https://bookdown.org/yihui/blogdown/)
 * [Tranquilpeak documentation](https://github.com/kakawait/hugo-tranquilpeak-theme/blob/master/docs/user.md)
 
-# Session info
-
-```{r, warning=FALSE, message=FALSE, echo=FALSE}
-sessionInfo()
-```
