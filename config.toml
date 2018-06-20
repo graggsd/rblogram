@@ -90,6 +90,12 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
   name = "Stack Overflow"
   pre = "<i class=\"sidebar-button-icon fa fa-lg fa-stack-overflow\"></i>"
   url = "https://stackoverflow.com/users/636472/kakawait"
+[[menu.links]]
+  weight = 3
+  identifier = "R-bloggers"
+  name = "R-bloggers"
+  pre = "<i class=\"sidebar-button-icon fa fa-lg fa-link\"></i>"
+  url = "https://www.r-bloggers.com"
 
 [[menu.misc]]
   weight = 1
